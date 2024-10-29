@@ -1,0 +1,142 @@
+---
+title: "Stock prices project"
+author: "Rodrigue Irampa"
+date: "2024-04-09"
+output: html_document
+---
+
+Suppose a stock price ${X(t),t ≥ 0}$ is modeled by a geometric Brownian motion process with drift coefficient $\mu=0.2$ and diffusion coefficient $\sigma^2$. If the initial price of the stock is $X(0)=100$ units, find the price of the stock for the next 10 time points. Take different values of $\sigma^2$ and comment on your findings.
+
+```{r}
+# The parameters
+X0 <- 100
+mu <- 0.2
+t <- 1:10
+sigmas <- c(0.01, 0.05, 0.1, 0.2)
+# The random processes
+set.seed(123)
+W <- matrix(rnorm(40), nrow = 10, ncol = 4)
+# The Geometric Brownian motion Function 
+stock_price <- function(X0, mu, sigmas, t, W) {
+  return(X0 * exp((mu - sigmas^2/2) * t + sigmas * W))
+}
+# The stock prices for each sigma^2
+stock_prices <- matrix(NA, nrow = 10, ncol = length(sigmas))
+for (i in 1:length(sigmas)) {
+  sigma <- sqrt(sigmas[i])
+  stock_prices[, i] <- stock_price(X0, mu, sigma, t, W[, i])
+}
+# Calculate stock prices for each sigma^2
+stock_prices <- matrix(NA, nrow = 10, ncol = length(sigmas))
+for (i in 1:length(sigmas)) {
+  sigma <- sqrt(sigmas[i])
+  stock_prices[, i] <- stock_price(X0, mu, sigma, t, W[, i])
+  cat("Sigma^2 =", sigmas[i], "\n")
+  cat("Stock prices for the next 10 time points:\n")
+  print(stock_prices[, i])
+  cat("\n")
+}
+```
+# Graph
+
+This graph provides a visual comparison of how different $\sigma^2$ values impact the stock prices over time. Each line represents a different $\sigma^2$ value, with colors indicating different levels of $\sigma^2$. 
+
+```{r}
+library(ggplot2)
+colors <- c("darkred", "darkblue", "darkcyan", "darkorange")
+matplot(t, stock_prices, type = "l", lty = 1, xlab = "Time", ylab = "Stock Price",
+        main = "Stock Prices for Different Sigma^2 Values",
+        col = colors, ylim = range(stock_prices))
+legend("topleft", legend = paste("Sigma^2 =", sigmas), col = colors, lty = 1)
+```
+
+```{r}
+# Parameters
+lambdas <- c(1, 5, 10, 20)
+T <- 10
+# Poisson process simulation function
+set.seed(123)
+poisson_process <- function(lambda, T) {
+  events <- numeric()
+  time <- 0
+  while (time <= T) {
+    # Generate the next event
+    inter_arrival <- rexp(1, rate = lambda)
+    time <- time + inter_arrival
+    if (time <= T) {
+      events <- c(events, time)
+    }
+  }
+  return(events)
+}
+# Plotting the simulation
+colors <- c("darkred", "darkblue", "darkcyan", "darkorange")
+plot(0, 0, type="n", xlim=c(0, T), ylim=c(0, max(lambdas)), xlab="Time", ylab="Cumulative Events", main="Poisson Process Realizations in T=[0,10]")
+legend("bottomright", legend=paste("lambda =", lambdas), col=colors, lty=1)
+for (i in seq_along(lambdas)) {
+  lambda <- lambdas[i]
+  events <- poisson_process(lambda, T)
+  steps <- c(0:length(events))
+  times <- c(0, events)
+  lines(times, steps, col=colors[i], type="s")  # Step function plot
+  cat(sprintf("Lambda = %d: %d\n", lambda, length(events)))
+}
+```
+
+In this task, you are required to analyze a linear birth-death process using R Studio. The birth and death rates are explicitly assigned, with a given time (t = 30) units. The birth rate ($\lambda$) is set to 3.8, and the death rate ($\mu$) is set to 0.4. Initially, the process starts with one entity, (X(0) = 1).
+
+Calculate the mean and variance functions of the process at (t = 5).
+
+## Comment:
+
+- Mean Function: The mean function at t=5 represents the expected number of entities in the process at that time. For this birth-death process, the mean function indicates that, on average, there will be approximately 24154953 entities at time t=5.
+- Variance Function: The variance function at t=5 represents the variability or dispersion of the number of entities in the process at that time. For this process, the variance function indicates that the variance of the number of entities at t=5 is approximately 7.207468e+14.
+
+```{r}
+# Parameters
+lambda <- 3.8
+mu <- 0.4
+t <- 5
+
+# Calculate the mean and variance
+mean <- exp((lambda - mu) * t)
+var <- (lambda + mu)/ (lambda - mu)*exp((lambda - mu) * t)*(exp((lambda - mu) * t)-1)
+
+# Print the results
+cat("Mean at t = 5:", mean, "\n")
+cat("Variance at t = 5:", var, "\n")
+```
+
+Determine the probability of absorption into state 0.
+
+## Comment:
+
+The probability of absorption into state 0 is the likelihood that the process will eventually reach state 0 and stay there. For this birth-death process, the probability of absorption into state 0 is approximately 0.105, or 10.5%. This means that there is a 10.5% chance that the process will eventually become extinct.
+
+```{r}
+absorption_prob <- mu / lambda
+# Print result
+cat("Probability of absorption into state 0 is:", absorption_prob, "\n")
+```
+
+Calculate the probability of extinction on or before time (t = 5).
+
+## Comment:
+
+The probability of extinction on or before time t=5 is the likelihood that the process will become extinct within the first 5 time units. For this birth-death process, the probability of extinction on or before time t=5 is approximately 0.105, or 10.5%. This indicates that there is a very high likelihood (10.5%) that the process will become extinct within the first 5 time units.
+
+```{r}
+Pt <- function(lambda, mu, t) {
+  numerator <- mu * (1 - exp(-(lambda - mu) * t))
+  denominator <- lambda - mu * exp(-(lambda - mu) * t)
+  probability <- numerator / denominator
+  return(probability)
+}
+Pt_1 <- Pt(lambda, mu, 1)
+Pt_3 <- Pt(lambda, mu, 3)
+Pt_5 <- Pt(lambda, mu, 5)
+# Print the results
+cat("At the t<=5 are :", Pt_1,"at t=1", Pt_3,"at t=3 and ", Pt_5,"at t=5", "\n");
+limit_Pt <- mu / lambda
+cat("Probability of extinction on or before time t = 5:", limit_Pt,"the same as before 5", "\n")
+```
