@@ -50,4 +50,5 @@ This leads to higher values of X(T) compared to $\lambda$=1.
 The process exhibits more variability and tends to reach higher values.
 - Lambda = 20: With a very high value of $\lambda$, the Poisson process has a large number of events occurring in the given time interval.
 This results in even higher values of X(T) compared to the previous cases, indicating a more volatile and higher-performing process.
-# Graph
+### Graph
+![poisson](https://github.com/user-attachments/assets/9b9003a9-e2e6-481f-b600-5c63b8b5b40a)
